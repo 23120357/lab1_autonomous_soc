@@ -62,7 +62,27 @@ def parse_nmap(xml_text: str, source_map: dict) -> list[Finding]:
     Gợi ý: ET.fromstring(xml_text), rồi root.iter("host") / host.iter("port").
     """
     findings: list[Finding] = []
-    ### TODO ### — viết code của bạn ở đây
+    root = ET.fromstring(xml_text)
+    for host in root.iter("host"):
+        address = host.find("address")
+        if address is None:
+            continue
+        asset_id = source_map.get(address.get("addr", ""), "")
+        for port in host.iter("port"):
+            state = port.find("state")
+            if state is None or state.get("state") != "open":
+                continue
+            service = port.find("service")
+            details = [port.get("portid", "") + "/" + port.get("protocol", "")]
+            if service is not None:
+                details.extend((service.get("name", ""), service.get("product", "")))
+            title = "Cổng " + details[0] + " mở — " + " ".join(
+                part.strip() for part in details[1:] if part.strip()
+            )
+            findings.append(Finding(
+                id=f"NMAP-{len(findings) + 1:03d}", source="nmap",
+                asset_id=asset_id, title=title.rstrip(), cwe="CWE-668", cvss=4.0,
+            ))
     return findings
 
 
@@ -80,7 +100,33 @@ def parse_nuclei(jsonl_text: str, source_map: dict) -> list[Finding]:
       - asset_id: tra source_map theo trường "host"
     """
     findings: list[Finding] = []
-    ### TODO ### — viết code của bạn ở đây
+    severity_scores = {
+        "info": 1.0, "low": 3.0, "medium": 5.5,
+        "high": 7.5, "critical": 9.3,
+    }
+    for line in jsonl_text.splitlines():
+        if not line.strip():
+            continue
+        try:
+            entry = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        info = entry.get("info", {})
+        classification = info.get("classification") or {}
+        cves = classification.get("cve-id") or []
+        cwes = classification.get("cwe-id") or []
+        cvss = classification.get("cvss-score")
+        findings.append(Finding(
+            id=f"NUCLEI-{len(findings) + 1:03d}",
+            source="nuclei",
+            asset_id=source_map.get(entry.get("host", ""), ""),
+            title=info.get("name", ""),
+            cve=cves[0] if cves else None,
+            cwe=cwes[0].upper() if cwes else None,
+            cvss=float(cvss) if cvss is not None else severity_scores.get(
+                info.get("severity", "").lower(), 0.0
+            ),
+        ))
     return findings
 
 
@@ -97,7 +143,24 @@ def parse_trivy(json_text: str, source_map: dict) -> list[Finding]:
       - asset_id: tra source_map theo ArtifactName
     """
     findings: list[Finding] = []
-    ### TODO ### — viết code của bạn ở đây
+    report = json.loads(json_text)
+    asset_id = source_map.get(report.get("ArtifactName", ""), "")
+    for result in report.get("Results", []):
+        for vulnerability in result.get("Vulnerabilities") or []:
+            scores = [source["V3Score"] for source in (vulnerability.get("CVSS") or {}).values()
+                      if source.get("V3Score") is not None]
+            cwes = vulnerability.get("CweIDs") or []
+            severity = vulnerability.get("Severity", "").upper()
+            findings.append(Finding(
+                id=f"TRIVY-{len(findings) + 1:03d}",
+                source="trivy",
+                asset_id=asset_id,
+                title=f"{vulnerability.get('PkgName', '')}: {vulnerability.get('Title', '')}",
+                cve=vulnerability.get("VulnerabilityID"),
+                cwe=cwes[0] if cwes else None,
+                cvss=float(max(scores, default=0.0)),
+                exploitability="poc" if severity in {"CRITICAL", "HIGH"} else "none",
+            ))
     return findings
 
 
@@ -110,7 +173,11 @@ def enrich_kev(findings: list[Finding], kev_catalog: list[str]) -> list[Finding]
     Với finding đã ở trong KEV, đặt luôn exploitability = "in_the_wild"
     (vì KEV nghĩa là đã bị khai thác trong thực tế).
     """
-    ### TODO ### — viết code của bạn ở đây
+    kev_cves = set(kev_catalog)
+    for finding in findings:
+        if finding.cve in kev_cves:
+            finding.kev = True
+            finding.exploitability = "in_the_wild"
     return findings
 
 
