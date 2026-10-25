@@ -1,0 +1,39 @@
+# Danh mục tài sản của LAB — ngữ cảnh dùng để chấm điểm rủi ro.
+# CHÚ Ý: các tài sản CỐ Ý khác nhau về criticality và exposure.
+# Nếu mọi tài sản giống nhau, chấm điểm đa yếu tố sẽ không khác gì CVSS thuần.
+assets:
+  - id: web-shop
+    name: "Cổng bán hàng (localhost:3000)"
+    type: web_app
+    exposure: public          # phơi ra Internet
+    criticality: high
+
+  - id: jenkins
+    name: "Jenkins CI (localhost:8080)"
+    type: web_app
+    exposure: vpn             # chỉ truy cập qua VPN nội bộ
+    criticality: critical     # nắm quyền build/deploy toàn hệ thống
+
+  - id: sandbox
+    name: "Máy sandbox thử nghiệm"
+    type: host
+    exposure: internal_lab
+    criticality: low
+
+  - id: demo-image
+    name: "vulnerable-demo:1.0"
+    type: container
+    exposure: internal_lab
+    criticality: medium
+
+# Ánh xạ nguồn quét -> tài sản
+source_map:
+  "http://localhost:3000": web-shop
+  "http://localhost:8080": jenkins
+  "127.0.0.1": sandbox
+  "vulnerable-demo:1.0": demo-image
+
+# Danh mục KEV rút gọn (CISA Known Exploited Vulnerabilities)
+kev_catalog:
+  - CVE-2021-44228
+  - CVE-2022-22965

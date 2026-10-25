@@ -1,0 +1,5 @@
+{"template-id":"missing-csp","info":{"name":"Missing Content-Security-Policy Header","severity":"low","classification":{"cwe-id":["cwe-693"]}},"host":"http://localhost:3000","matched-at":"http://localhost:3000/"}
+{"template-id":"x-frame-options","info":{"name":"Missing X-Frame-Options (clickjacking)","severity":"medium","classification":{"cwe-id":["cwe-1021"],"cvss-score":5.3}},"host":"http://localhost:3000","matched-at":"http://localhost:3000/"}
+{"template-id":"dir-listing","info":{"name":"Directory Listing Enabled","severity":"medium","classification":{"cwe-id":["cwe-548"],"cvss-score":5.0}},"host":"http://localhost:3000","matched-at":"http://localhost:3000/assets/"}
+{"template-id":"exposed-git","info":{"name":"Exposed .git Directory","severity":"high","classification":{"cwe-id":["cwe-527"],"cvss-score":7.5}},"host":"http://localhost:3000","matched-at":"http://localhost:3000/.git/config"}
+{"template-id":"spring4shell","info":{"name":"Spring4Shell RCE","severity":"critical","classification":{"cwe-id":["cwe-94"],"cve-id":["CVE-2022-22965"],"cvss-score":9.8}},"host":"http://localhost:8080","matched-at":"http://localhost:8080/"}

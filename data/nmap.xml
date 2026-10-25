@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<nmaprun scanner="nmap" args="nmap -sV -oX - 127.0.0.1" start="1785000000" version="7.94">
+  <host starttime="1785000001" endtime="1785000040">
+    <status state="up" reason="localhost-response"/>
+    <address addr="127.0.0.1" addrtype="ipv4"/>
+    <hostnames><hostname name="localhost" type="user"/></hostnames>
+    <ports>
+      <port protocol="tcp" portid="22">
+        <state state="open" reason="syn-ack"/>
+        <service name="ssh" product="OpenSSH" version="8.9p1" method="probed" conf="10"/>
+      </port>
+      <port protocol="tcp" portid="3000">
+        <state state="open" reason="syn-ack"/>
+        <service name="http" product="Node.js Express framework" method="probed" conf="10"/>
+      </port>
+      <port protocol="tcp" portid="8080">
+        <state state="open" reason="syn-ack"/>
+        <service name="http-proxy" product="Jetty" version="9.4.31" method="probed" conf="9"/>
+      </port>
+      <port protocol="tcp" portid="9200">
+        <state state="closed" reason="conn-refused"/>
+        <service name="wap-wsp" method="table" conf="3"/>
+      </port>
+    </ports>
+  </host>
+</nmaprun>
